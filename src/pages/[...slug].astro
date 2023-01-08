@@ -1,0 +1,25 @@
+---
+import Layout from '../layouts/Layout.astro'
+
+import { format, buildGraph, getContentMdFileList } from '../garden';
+
+export async function getStaticPaths() {
+  return buildGraph(
+      format((await Astro.glob('../../content/**/*.md'))
+        .filter((post) => !post.frontmatter.draft)
+      )
+    )
+}
+
+const { frontmatter, title, post, post: { Content }, node } = Astro.props;
+const headings = await post.getHeadings();
+---
+
+<Layout
+  title={frontmatter?.title || title}
+  filelist={getContentMdFileList()}
+  node={node}
+  headings={headings}
+>
+  <Content/>
+</Layout>

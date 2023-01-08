@@ -1,0 +1,91 @@
+---
+import Filetree from '../components/Filetree.astro';
+
+const { title, headings, node, filelist } = Astro.props.frontmatter || Astro.props;
+
+const nonExistOutgoing = node?.outgoing.filter((o) => !o.isExist).map((o) => o.slug)
+
+// HACK: Dirty way / non-accessible way to disable non-existing link out
+const styleForNonExistedOutgoing = (nonExistOutgoing?.map((slug) => `
+  a[href="/${slug}"] {
+    opacity: 0.75;
+  }
+  a[href="/${slug}"]:hover {
+    opacity: 0.5;
+  }
+`) || []).join('\n')
+
+---
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+	</head>
+	<body class="dark:bg-neutral-900 py-24 px-4">
+		<div class="sm:flex flex-row-reverse gap-3">
+			<main class="flex-1 sm:pr-8 md:pr-16">
+				<div class="prose mx-auto dark:prose-invert hover:prose-a:opacity-75">
+					<style is:inline set:html={styleForNonExistedOutgoing}></style>
+					<hgroup class="border-b">
+						<h1>{title}</h1>
+					</hgroup>
+					{ headings && headings.length > 0 &&
+						<details class="my-5">
+							<summary>Contents</summary>
+							<ul class="list-disc">
+								{headings.map((h) => 
+										<li style={`margin-left: ${h.depth - 1}em;`}>
+											<a href={`#${h.slug}`}>{h.text}</a>
+										</li>
+									)
+								}
+							</ul>
+						</details>
+					}
+					<slot />
+					{ node && (node.outgoing.length > 0 || node.incoming.length > 0) && 
+						<div class="mt-5 pt-5 border-t">
+							<h1 class="text-lg">Related Notes</h1>
+								{ node.incoming.length > 0 &&
+									<h2 class="text-base">Backlinks</h2>
+									<ul>
+										{ node.incoming.map((o) =>
+												<li>
+													<a href={`/${o.slug}`}>{o.title}</a>
+												</li>
+											)
+										}
+									</ul>
+								}
+								{ node.outgoing.length > 0 &&
+									<h2 class="text-base">Outgoing Links</h2>
+									<ul>
+										{ node.outgoing.map((o) =>
+												<li>
+													{
+														o.isExist ?
+															<a href={`/${o.slug}`}>{o.title}</a>
+														:
+															<span class="opacity-75">{o.title}</span>
+													}
+												</li>
+											)
+										}
+									</ul>
+								}
+						</div>
+					}
+				</div>
+			</main>
+			{filelist && <aside class="w-72 py-12 sm:py-0 dark:text-white">
+				<h1 class="font-bold mb-3">Files</h1>
+				<Filetree filelist={filelist}></Filetree>
+			</aside>}
+		</div>
+	</body>
+</html>

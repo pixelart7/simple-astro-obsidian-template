@@ -1,0 +1,33 @@
+---
+import FiletreeDir from './FiletreeDir.astro';
+import FiletreeFile from './FiletreeFile.astro';
+
+import { helperDirsAndFile, generatePathSlug } from '../garden.ts';
+
+const { filelist } = Astro.props
+
+// https://stackoverflow.com/a/57344801/2560112
+let result = [];
+let level = { result };
+
+filelist.forEach(path => {
+  const { dir, filename } = helperDirsAndFile(path);
+  path.split('/').reduce((r, name, i, a) => {
+    if(!r[name]) {
+      r[name] = {result: []};
+      r.result.push({name, children: r[name].result, slug: generatePathSlug(dir, filename)})
+    }
+    
+    return r[name];
+  }, level)
+})
+
+---
+
+<ul>
+  { result.map((r) => 
+    (r.children.length > 0) ?
+    <FiletreeDir name={r.name} children={r.children}></FiletreeDir>
+    : <FiletreeFile name={r.name} slug={r.slug}></FiletreeFile>
+  ) }
+</ul>

@@ -1,0 +1,19 @@
+---
+import FiletreeDir from './FiletreeDir.astro';
+import FiletreeFile from './FiletreeFile.astro';
+
+const { name, children } = Astro.props
+---
+
+<ul>
+  <details>
+    <summary class="py-1 cursor-pointer hover:opacity-75">{name}</summary>
+    <div class="pl-2">
+      { children.map((r) => 
+        (r.children.length > 0) ?
+        <FiletreeDir name={r.name} children={r.children}></FiletreeDir>
+        : <FiletreeFile name={r.name} slug={r.slug}></FiletreeFile>
+    ) }
+    </div>
+  </details>
+</ul>
